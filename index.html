@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8th Grade English Review - Interactive Classroom App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        h1, h2, h3, .game-font {
+            font-family: 'Fredoka', sans-serif;
+        }
+        .notebook-card {
+            background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+            border-left: 6px solid;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .notebook-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+        .pulse-mic {
+            animation: pulse-ring 1.25s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .slot-active {
+            animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes pop-in {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-40 px-4 py-3 shadow-lg">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-graduation-cap text-2xl text-white"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-indigo-400 block">8th Grade • 3rd Trimester</span>
+                    <h1 class="text-xl md:text-2xl font-bold text-white tracking-wide">English Test Review Show</h1>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex items-center bg-slate-800 p-1.5 rounded-2xl border border-slate-700">
+                <button onclick="switchTab('insights')" id="tab-insights" class="px-4 py-2 rounded-xl font-bold text-sm md:text-base transition-all flex items-center gap-2 bg-indigo-600 text-white shadow">
+                    <i class="fa-solid fa-book-open"></i> 1. Notebook Insights
+                </button>
+                <button onclick="switchTab('game')" id="tab-game" class="px-4 py-2 rounded-xl font-bold text-sm md:text-base transition-all flex items-center gap-2 text-slate-300 hover:text-white">
+                    <i class="fa-solid fa-microphone-lines"></i> 2. Voice Challenge
+                </button>
+                <button onclick="switchTab('teacher')" id="tab-teacher" class="px-4 py-2 rounded-xl font-bold text-sm md:text-base transition-all flex items-center gap-2 text-slate-300 hover:text-white">
+                    <i class="fa-solid fa-chalkboard-user"></i> Lesson Plan
+                </button>
+            </nav>
+
+            <!-- Sound & Fullscreen Controls -->
+            <div class="flex items-center gap-2">
+                <button onclick="toggleSound()" id="sound-btn" class="p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 transition" title="Toggle Sound ON/OFF">
+                    <i class="fa-solid fa-volume-high text-lg"></i>
+                </button>
+                <button onclick="toggleFullScreen()" class="p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="Fullscreen Mode for Projector">
+                    <i class="fa-solid fa-expand text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6">
+        
+        <!-- TAB 1: NOTEBOOK INSIGHTS -->
+        <section id="view-insights" class="space-y-6">
+            <div class="bg-gradient-to-r from-amber-500/20 via-orange-500/10 to-transparent border-l-4 border-amber-400 p-4 rounded-r-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="bg-amber-400/20 p-3 rounded-xl text-amber-300">
+                        <i class="fa-solid fa-pencil-alt text-2xl animate-bounce"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl md:text-2xl font-bold text-amber-300">ATTENTION CLASS: Write These Key Insights in Your Notebook!</h2>
+                        <p class="text-slate-300 text-sm md:text-base">These are the "golden shortcuts" so you don't fall for any test traps. Copy these notes before we start the voice game!</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 self-end md:self-center">
+                    <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Font Size:</span>
+                    <button onclick="adjustFontSize(1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-600 font-bold text-sm">A+</button>
+                    <button onclick="adjustFontSize(-1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-600 font-bold text-sm">A-</button>
+                </div>
+            </div>
+
+            <!-- Grid of 4 Core Topics -->
+            <div id="insights-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-6 text-base">
+                
+                <!-- Topic 1: Travel Vocabulary -->
+                <div class="notebook-card border-cyan-400 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 font-bold text-xs uppercase tracking-wider">Topic 1 • Vocabulary</span>
+                        <i class="fa-solid fa-plane-departure text-2xl text-cyan-400/50"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-3">Travel Words: Look for the Context Clue!</h3>
+                    <p class="text-slate-300 mb-4 font-medium">Each travel word has a specific purpose. Find the clue in the sentence:</p>
+                    <ul class="space-y-2.5 text-slate-200">
+                        <li class="flex items-start gap-2.5 bg-slate-800/70 p-2.5 rounded-xl">
+                            <span class="text-cyan-400 font-extrabold">TRIP:</span>
+                            <span>Focuses on the <strong>destination/purpose</strong> + short duration (going and coming back). <br><em class="text-xs text-slate-400">Clues: weekend trip, business trip, day trip, school trip.</em></span>
+                        </li>
+                        <li class="flex items-start gap-2.5 bg-slate-800/70 p-2.5 rounded-xl">
+                            <span class="text-cyan-400 font-extrabold">JOURNEY:</span>
+                            <span>Focuses on the <strong>long travel time</strong> from A to B (usually by land). <br><em class="text-xs text-slate-400">Clues: takes days, long distance driving, train journey.</em></span>
+                        </li>
+                        <li class="flex items-start gap-2.5 bg-slate-800/70 p-2.5 rounded-xl">
+                            <span class="text-cyan-400 font-extrabold">VOYAGE:</span>
+                            <span>A very long journey by <strong>SEA (ship/ocean)</strong> or in <strong>SPACE</strong>. <br><em class="text-xs text-slate-400">Clues: Titanic, Atlantic Ocean, spacecraft, across the ocean.</em></span>
+                        </li>
+                        <li class="flex items-start gap-2.5 bg-slate-800/70 p-2.5 rounded-xl">
+                            <span class="text-cyan-400 font-extrabold">DEPART vs SAIL:</span>
+                            <span><strong>Depart</strong> = formal verb meaning "to leave" (flights, trains, gates). <br><strong>Sail</strong> = verb meaning "to travel on water" in a boat or ship.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Topic 2: Relative Pronouns -->
+                <div class="notebook-card border-emerald-400 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-bold text-xs uppercase tracking-wider">Topic 2 • Grammar Connection</span>
+                        <i class="fa-solid fa-link text-2xl text-emerald-400/50"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-3">Relative Pronouns: Check Before & After!</h3>
+                    <p class="text-slate-300 mb-4 font-medium">The word before the blank gives the clue, and the word after confirms it:</p>
+                    <ul class="space-y-2.5 text-slate-200">
+                        <li class="flex items-start gap-2.5 bg-slate-800/70 p-2.5 rounded-xl">
+                            <span class="text-emerald-400 font-extrabold">WHO:</span>
+                            <span>Used ONLY for <strong>PEOPLE</strong> + followed by a verb/action.<br><em class="text-xs text-slate-400">Ex: The boy <u>who</u> is playing... (Careful: animals use WHICH/THAT!).</em></span>
+                        </li>
+                        <li class="flex items-start gap-2.5 bg-slate-800/70 p-2.5 rounded-xl">
+                            <span class="text-emerald-400 font-extrabold">WHICH / THAT:</span>
+                            <span>Used for <strong>THINGS or ANIMALS</strong>.<br><em class="text-xs text-slate-400">Ex: The dog <u>which/that</u> is barking... / The book <u>which/that</u> is mine.</em></span>
+                        </li>
+                        <li class="flex items-start gap-2.5 bg-slate-800/70 p-2.5 rounded-xl">
+                            <span class="text-emerald-400 font-extrabold">WHERE:</span>
+                            <span>Used for <strong>PLACES</strong> where an action happens.<br><em class="text-xs text-slate-400">Ex: The restaurant <u>where</u> we ate the best pizza.</em></span>
+                        </li>
+                        <li class="flex items-start gap-2.5 bg-amber-500/10 border border-amber-500/30 p-2.5 rounded-xl">
+                            <span class="text-amber-400 font-extrabold">⚠️ WHOSE:</span>
+                            <span>Shows <strong>POSSESSION ("belongs to")</strong>. Always placed between the owner and the noun!<br><em class="text-xs text-amber-200">Formula: [Person] + <strong>WHOSE</strong> + [Noun: eyes, mother, passport].</em></span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Topic 3: Past Perfect x Past Simple -->
+                <div class="notebook-card border-purple-400 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 font-bold text-xs uppercase tracking-wider">Topic 3 • Timeline</span>
+                        <i class="fa-solid fa-clock-rotate-left text-2xl text-purple-400/50"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-3">Past Perfect vs. Past Simple: Time Machine</h3>
+                    <p class="text-slate-300 mb-4 font-medium">When two events happened in the past, ask yourself: which one happened <strong>FIRST</strong>?</p>
+                    <div class="space-y-3 text-slate-200">
+                        <div class="bg-purple-950/50 border border-purple-500/30 p-3 rounded-xl">
+                            <div class="font-extrabold text-purple-300">ACTION 1 (Happened FIRST - Earlier Past) ➔ PAST PERFECT</div>
+                            <div class="text-sm mt-1">Formula: <code class="bg-slate-900 px-2 py-0.5 rounded text-purple-200 font-bold">HAD + Past Participle (3rd column / -ed)</code></div>
+                            <div class="text-xs text-slate-400 mt-1">Ex: had left, had already started, had forgotten, had never flown.</div>
+                        </div>
+                        <div class="bg-slate-800/70 p-3 rounded-xl">
+                            <div class="font-extrabold text-indigo-300">ACTION 2 (Happened SECOND - Later Past) ➔ PAST SIMPLE</div>
+                            <div class="text-sm mt-1">Formula: <code class="bg-slate-900 px-2 py-0.5 rounded text-indigo-200 font-bold">Verb + -ED or 2nd column (Irregular)</code></div>
+                            <div class="text-xs text-slate-400 mt-1">Ex: When we <strong>arrived</strong> (Action 2), the movie <strong>had already started</strong> (Action 1).</div>
+                        </div>
+                        <div class="text-xs bg-slate-900 p-2.5 rounded-lg text-amber-300 font-semibold">
+                            💡 TEST TIP: Time expressions like <em>"By the time..."</em> or <em>"When..."</em> usually introduce Action 2 (Past Simple)!
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Topic 4: Second Conditional -->
+                <div class="notebook-card border-rose-400 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 font-bold text-xs uppercase tracking-wider">Topic 4 • Hypothetical World</span>
+                        <i class="fa-solid fa-wand-magic-sparkles text-2xl text-rose-400/50"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-3">Second Conditional: Imaginary Situations</h3>
+                    <p class="text-slate-300 mb-4 font-medium">Used for hypothetical, imaginary, or unlikely situations in the present/future:</p>
+                    <div class="space-y-3 text-slate-200">
+                        <div class="bg-rose-950/40 border border-rose-500/30 p-3 rounded-xl text-center">
+                            <span class="text-xs uppercase text-rose-300 font-bold block mb-1">The Golden Formula:</span>
+                            <div class="text-base md:text-lg font-extrabold text-white">
+                                <span class="text-amber-300">IF + Simple Past</span> , <span class="text-emerald-300">WOULD + Base Verb (Infinitive)</span>
+                            </div>
+                        </div>
+                        <ul class="space-y-2 text-sm">
+                            <li class="bg-slate-800/70 p-2.5 rounded-xl">
+                                🚫 <strong>NEVER put "would" inside the IF-clause!</strong><br>
+                                <span class="text-xs text-slate-400">Watch out for inverted sentences! Ex: <em>She <u>would travel</u> more <strong>if</strong> she <u>had</u> free time.</em></span>
+                            </li>
+                            <li class="bg-amber-500/10 border border-amber-500/30 p-2.5 rounded-xl">
+                                👑 <strong>Special Rule for Verb TO BE:</strong> In the Second Conditional, we use <strong>WERE</strong> for ALL subjects (I, he, she, it)!<br>
+                                <span class="text-xs text-amber-200">Ex: <em>If I <strong>were</strong> the President, I <strong>would build</strong> more schools.</em></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="flex justify-center pt-4">
+                <button onclick="switchTab('game')" class="px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-lg shadow-xl shadow-indigo-600/30 flex items-center gap-3 transform hover:scale-105 transition">
+                    <i class="fa-solid fa-play"></i> Finished Taking Notes? Start the Voice Challenge!
+                </button>
+            </div>
+        </section>
+
+        <!-- TAB 2: VOICE CHALLENGE GAME -->
+        <section id="view-game" class="hidden space-y-6">
+            
+            <!-- Level & Progress Header -->
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 md:p-6 shadow-xl">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                    
+                    <!-- Level Progression Steps -->
+                    <div class="lg:col-span-7 grid grid-cols-4 gap-2 md:gap-4">
+                        <!-- Level 1 -->
+                        <div id="lvl-badge-1" class="p-3 rounded-2xl border-2 border-emerald-500 bg-emerald-500/10 text-center transition-all">
+                            <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 block">Level 1</span>
+                            <span class="text-base md:text-lg font-extrabold text-white">EASY</span>
+                            <div id="lvl-dots-1" class="flex justify-center gap-1 mt-2"></div>
+                        </div>
+                        <!-- Level 2 -->
+                        <div id="lvl-badge-2" class="p-3 rounded-2xl border-2 border-slate-700 bg-slate-800/50 text-center opacity-60 transition-all">
+                            <span class="text-xs font-bold uppercase tracking-wider text-cyan-400 block">Level 2</span>
+                            <span class="text-base md:text-lg font-extrabold text-white">MEDIUM</span>
+                            <div id="lvl-dots-2" class="flex justify-center gap-1 mt-2"></div>
+                        </div>
+                        <!-- Level 3 -->
+                        <div id="lvl-badge-3" class="p-3 rounded-2xl border-2 border-slate-700 bg-slate-800/50 text-center opacity-60 transition-all">
+                            <span class="text-xs font-bold uppercase tracking-wider text-amber-400 block">Level 3</span>
+                            <span class="text-base md:text-lg font-extrabold text-white">HARD</span>
+                            <div id="lvl-dots-3" class="flex justify-center gap-1 mt-2"></div>
+                        </div>
+                        <!-- Level 4 -->
+                        <div id="lvl-badge-4" class="p-3 rounded-2xl border-2 border-slate-700 bg-slate-800/50 text-center opacity-60 transition-all">
+                            <span class="text-xs font-bold uppercase tracking-wider text-rose-400 block">Level 4</span>
+                            <span class="text-base md:text-lg font-extrabold text-white">EXPERT</span>
+                            <div id="lvl-dots-4" class="flex justify-center gap-1 mt-2"></div>
+                        </div>
+                    </div>
+
+                    <!-- Rule Reminder & Team Spotlight -->
+                    <div class="lg:col-span-5 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-800/90 p-4 rounded-2xl border border-slate-700">
+                        <div>
+                            <span class="text-xs uppercase font-bold text-indigo-400 block">Participation Spinner</span>
+                            <div id="spotlight-display" class="text-base font-bold text-white mt-0.5">Whole Class Ready!</div>
+                            <span class="text-xs text-slate-400">Goal: 5 correct per level • Mistake = Drop 1 level!</span>
+                        </div>
+                        <button onclick="spinSpotlight()" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-sm flex items-center gap-2 shadow-lg shrink-0 transition">
+                            <i class="fa-solid fa-dice"></i> Spin Speaker
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Question Stage -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Left/Center: Main Question Card -->
+                <div class="lg:col-span-8 bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl flex flex-col justify-between relative overflow-hidden">
+                    
+                    <div>
+                        <!-- Category & Question Counter -->
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-6">
+                            <span id="q-topic-badge" class="px-4 py-1.5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold text-sm border border-indigo-500/30">
+                                Topic 1 • Travel Vocabulary
+                            </span>
+                            <span id="q-status-counter" class="text-sm font-bold text-slate-400">
+                                Level Easy: 0 of 5 Correct
+                            </span>
+                        </div>
+
+                        <!-- Question Prompt -->
+                        <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-6 mb-6">
+                            <p id="q-instruction" class="text-xs md:text-sm uppercase tracking-wider text-amber-400 font-bold mb-2">
+                                Complete the sentence by speaking the correct answer:
+                            </p>
+                            <h2 id="q-text" class="text-2xl md:text-4xl font-bold text-white leading-snug">
+                                Loading question...
+                            </h2>
+                        </div>
+
+                        <!-- Options / Hint Box -->
+                        <div id="q-options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                            <!-- Dynamically populated options so students know what to say or click -->
+                        </div>
+                    </div>
+
+                    <!-- Feedback Banner (Hidden until answered) -->
+                    <div id="feedback-box" class="hidden rounded-2xl p-5 border-2 transition-all">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                            <div id="feedback-icon" class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0"></div>
+                            <div class="flex-grow">
+                                <h4 id="feedback-title" class="text-lg md:text-xl font-extrabold"></h4>
+                                <p id="feedback-explanation" class="text-sm md:text-base text-slate-200 mt-1"></p>
+                            </div>
+                            <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+                                <button id="override-btn" onclick="overrideWrongAnswer()" class="hidden px-4 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs md:text-sm transition shadow-lg items-center gap-1.5" title="Click here if the student spoke the right answer but the microphone misheard">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Teacher Override: Mark Correct
+                                </button>
+                                <button id="next-q-btn" onclick="nextQuestion()" class="px-6 py-3 rounded-xl bg-white text-slate-900 font-extrabold text-sm md:text-base hover:bg-slate-200 transition shrink-0 shadow-lg">
+                                    Next <i class="fa-solid fa-arrow-right ml-1"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right: Voice Recognition Control Center -->
+                <div class="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl flex flex-col justify-between space-y-6">
+                    
+                    <div class="text-center space-y-3">
+                        <span class="px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 font-bold text-xs uppercase tracking-wider">
+                            <i class="fa-solid fa-tower-broadcast mr-1"></i> Classroom Voice Capture
+                        </span>
+                        <h3 class="text-xl font-bold text-white">Speak Your Answer Out Loud!</h3>
+                        <p class="text-xs text-slate-400">Click the microphone and have the student or group speak the answer clearly in English.</p>
+                    </div>
+
+                    <!-- Giant Microphone Button -->
+                    <div class="flex flex-col items-center justify-center py-4">
+                        <button id="mic-btn" onclick="toggleVoiceRecognition()" class="w-28 h-28 rounded-full bg-gradient-to-br from-rose-500 to-red-600 hover:from-rose-400 hover:to-red-500 text-white flex flex-col items-center justify-center shadow-2xl shadow-rose-600/40 transition transform hover:scale-105 focus:outline-none">
+                            <i id="mic-icon" class="fa-solid fa-microphone text-4xl mb-1"></i>
+                            <span id="mic-label" class="text-xs font-extrabold uppercase tracking-wider">Speak Now</span>
+                        </button>
+                        <p id="mic-status" class="text-sm font-semibold text-slate-400 mt-4 text-center min-h-[24px]">
+                            Microphone ready (en-US).
+                        </p>
+                    </div>
+
+                    <!-- Recognized Speech Transcript Box -->
+                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4">
+                        <span class="text-xs uppercase font-bold text-slate-500 block mb-1">What the app heard:</span>
+                        <div id="speech-transcript" class="text-lg font-bold text-amber-300 min-h-[32px] italic">
+                            "..."
+                        </div>
+                    </div>
+
+                    <!-- Manual Fallback Input (For noisy classrooms or quick teacher override) -->
+                    <div class="pt-2 border-t border-slate-800">
+                        <label class="text-xs uppercase font-bold text-slate-400 block mb-2">
+                            Or type / validate the class's spoken answer:
+                        </label>
+                        <div class="flex gap-2">
+                            <input type="text" id="manual-answer-input" placeholder="Type the answer in English..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500" onkeypress="if(event.key === 'Enter') submitManualAnswer()">
+                            <button onclick="submitManualAnswer()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-sm shrink-0 transition">
+                                Submit
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- TAB 3: INTERACTIVE LESSON PLAN -->
+        <section id="view-teacher" class="hidden space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-xl space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-widest text-indigo-400">Teaching Guide</span>
+                        <h2 class="text-2xl md:text-3xl font-bold text-white">Interactive Review Lesson Plan (50 min)</h2>
+                        <p class="text-slate-400 text-sm">Designed to engage 100% of 8th-grade students through active note-taking and voice-controlled gamification.</p>
+                    </div>
+                    <button onclick="resetFullGame()" class="px-4 py-2.5 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 font-bold text-sm self-start md:self-center">
+                        <i class="fa-solid fa-rotate-right mr-1"></i> Reset Game Progress
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-slate-800/60 border border-slate-700 p-5 rounded-2xl space-y-3">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-lg">1</div>
+                        <h3 class="text-lg font-bold text-white">Clue Hunting & Notebook Insights (15 min)</h3>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            Project Tab <strong>1. Notebook Insights</strong>. Divide the class into 4 groups (Rows A, B, C, and D). Assign 1 topic card to each group to present the "test trap" in 1 minute. All students copy the 4 visual summary boxes into their notebooks as their official test study guide.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-800/60 border border-slate-700 p-5 rounded-2xl space-y-3">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-lg">2</div>
+                        <h3 class="text-lg font-bold text-white">Cooperative Voice Challenge (25 min)</h3>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            Switch to Tab <strong>2. Voice Challenge</strong>. The whole class plays together as one team! Click <em>"Spin Speaker"</em> to pick who answers the round (e.g., Window Row, Back Row, Choral Response). Give them 15 seconds to check their notebooks before speaking into the microphone.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-800/60 border border-slate-700 p-5 rounded-2xl space-y-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-lg">3</div>
+                        <h3 class="text-lg font-bold text-white">Positive Tension: Climb & Drop Rule (10 min)</h3>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            Because a wrong answer drops the class down 1 level and requires 5 new correct answers to climb back up, students naturally collaborate and peer-coach! Whenever feedback appears, ask the class to point out <strong>which clue word in the sentence gave away the answer</strong>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Victory Modal -->
+    <div id="victory-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border-2 border-amber-400 rounded-3xl max-w-lg w-full p-8 text-center shadow-2xl space-y-6">
+            <div class="w-24 h-24 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center mx-auto text-5xl animate-bounce">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+            <h2 class="text-3xl md:text-4xl font-extrabold text-white">MISSION ACCOMPLISHED!</h2>
+            <p class="text-slate-300 text-base md:text-lg">
+                Congratulations, 8th Grade! You mastered all 4 levels (Easy, Medium, Hard, and Expert) by answering 5 questions in each level. You are 100% ready for your English test!
+            </p>
+            <div class="bg-slate-800 p-4 rounded-2xl text-sm text-slate-300 flex justify-around">
+                <div>
+                    <span class="block text-xs uppercase text-slate-400">Total Correct</span>
+                    <span id="stat-correct" class="text-2xl font-bold text-emerald-400">20</span>
+                </div>
+                <div>
+                    <span class="block text-xs uppercase text-slate-400">Level Drops Overcome</span>
+                    <span id="stat-drops" class="text-2xl font-bold text-amber-400">0</span>
+                </div>
+            </div>
+            <button onclick="resetFullGame()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-extrabold text-lg hover:from-amber-400 hover:to-orange-400 transition">
+                Play Again with Unseen Questions
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Question Bank: Over 12-14 questions per level so that dropping a level ALWAYS serves an unseen question
+        const questionBank = {
+            1: [ // LEVEL 1: EASY (Direct concepts & study guide foundations)
+                {
+                    topic: "Topic 1 • Travel Vocabulary",
+                    instruction: "Say the missing word to complete the sentence:",
+                    question: "We went on a weekend _______ to the mountains to relax.",
+                    options: ["trip", "voyage", "depart", "sail"],
+                    accepted: ["trip", "a trip", "weekend trip"],
+                    answerDisplay: "trip",
+                    feedback: "Correct! A 'weekend trip' is a short journey where you go to a place and come back."
+                },
+                {
+                    topic: "Topic 1 • Travel Vocabulary",
+                    instruction: "Say the missing word to complete the sentence:",
+                    question: "The Titanic sank on its first _______ across the Atlantic Ocean.",
+                    options: ["voyage", "trip", "depart", "journey"],
+                    accepted: ["voyage", "first voyage"],
+                    answerDisplay: "voyage",
+                    feedback: "Well done! A long journey by sea (ship) or in space is called a 'voyage'."
+                },
+                {
+                    topic: "Topic 1 • Travel Vocabulary",
+                    instruction: "Say the missing word to complete the sentence:",
+                    question: "Attention passengers: Flight 405 to London will _______ from gate 12.",
+                    options: ["depart", "sail", "trip", "voyage"],
+                    accepted: ["depart"],
+                    answerDisplay: "depart",
+                    feedback: "Exact! 'Depart' is a formal verb meaning 'to leave', commonly used for flights and trains."
+                },
+                {
+                    topic: "Topic 1 • Travel Vocabulary",
+                    instruction: "Say the missing word to complete the sentence:",
+                    question: "My grandparents bought a boat because they want to _______ around the Caribbean islands.",
+                    options: ["sail", "depart", "journey", "trip"],
+                    accepted: ["sail"],
+                    answerDisplay: "sail",
+                    feedback: "Perfect! 'To sail' means to travel on water in a ship or boat."
+                },
+                {
+                    topic: "Topic 1 • Travel Vocabulary",
+                    instruction: "Say the missing word to complete the sentence:",
+                    question: "Driving from New York to California is a very long _______ that takes days.",
+                    options: ["journey", "voyage", "sail", "depart"],
+                    accepted: ["journey"],
+                    answerDisplay: "journey",
+                    feedback: "Spot on! When we focus on the long travel time from one place to another ('takes days'), we use 'journey'."
+                },
+                {
+                    topic: "Topic 2 • Relative Pronouns",
+                    instruction: "Choose and speak the correct relative pronoun:",
+                    question: "The boy _______ is playing the piano is my brother.",
+                    options: ["who", "which", "where", "whose"],
+                    accepted: ["who"],
+                    answerDisplay: "who",
+                    feedback: "Excellent! 'The boy' is a person followed by a verb ('is playing'), so we use 'who'."
+                },
+                {
+                    topic: "Topic 2 • Relative Pronouns",
+                    instruction: "Choose and speak the correct relative pronoun:",
+                    question: "This is the city _______ I was born.",
+                    options: ["where", "who", "whose", "which"],
+                    accepted: ["where"],
+                    answerDisplay: "where",
+                    feedback: "Bullseye! 'The city' refers to a place where something happened, so we use 'where'."
+                },
+                {
+                    topic: "Topic 2 • Relative Pronouns",
+                    instruction: "Choose and speak the correct relative pronoun:",
+                    question: "The book _______ is on the table is mine.",
+                    options: ["which", "who", "where", "whose"],
+                    accepted: ["which", "that", "which or that"],
+                    answerDisplay: "which / that",
+                    feedback: "Correct! For things and objects ('the book'), we use 'which' or 'that'."
+                },
+                {
+                    topic: "Topic 3 • Past Perfect x Simple",
+                    instruction: "Which action happened FIRST in the past? Speak the verb in the Past Perfect:",
+                    question: "When we arrived at the cinema, the movie _______ already _______.",
+                    options: ["had started", "started", "has started", "would start"],
+                    accepted: ["had started", "had already started"],
+                    answerDisplay: "had started",
+                    feedback: "Great job! The movie started BEFORE we arrived at the cinema (Action 1 = Past Perfect: had + started)."
+                },
+                {
+                    topic: "Topic 4 • Second Conditional",
+                    instruction: "Speak the correct verb to complete the Second Conditional:",
+                    question: "If I won the lottery, I _______ buy an island.",
+                    options: ["would", "will", "had", "did"],
+                    accepted: ["would", "would buy", "i would buy"],
+                    answerDisplay: "would",
+                    feedback: "Perfect! In the Second Conditional, 'If + Simple Past (won)' pairs with 'would + base verb (buy)'."
+                },
+                {
+                    topic: "Topic 2 • Relative Pronouns",
+                    instruction: "Choose and speak the correct relative pronoun:",
+                    question: "I met a girl _______ mother is a famous actress.",
+                    options: ["whose", "who", "where", "which"],
+                    accepted: ["whose"],
+                    answerDisplay: "whose",
+                    feedback: "Awesome! The mother belongs to the girl (possession), so we use 'whose'."
+                },
+                {
+                    topic: "Topic 4 • Second Conditional",
+                    instruction: "Speak the special Past form of 'to be' for the Second Conditional:",
+                    question: "If I _______ you, I would study these notebook insights!",
+                    options: ["were", "am", "will be", "would be"],
+                    accepted: ["were", "if i were"],
+                    answerDisplay: "were",
+                    feedback: "Golden Rule! In the Second Conditional, we use 'WERE' for all persons."
+                },
+                {
+                    topic: "Topic 1 • Travel Vocabulary",
+                    instruction: "Say the missing word to complete the sentence:",
+                    question: "Our class is going on a day _______ to the science museum tomorrow.",
+                    options: ["trip", "voyage", "sail", "depart"],
+                    accepted: ["trip", "day trip"],
+                    answerDisplay: "trip",
+                    feedback: "Correct! 'A day trip' is a short visit where you go and come back on the same day."
+                },
+                {
+                    topic: "Topic 3 • Past Perfect x Simple",
+                    instruction: "Speak the correct verb tense:",
+                    question: "I couldn't buy the tickets because I _______ my wallet at home.",
+                    options: ["had forgotten", "forgot", "forget", "would forget"],
+                    accepted: ["had forgotten"],
+                    answerDisplay: "had forgotten",
+                    feedback: "Nice! Forgetting the wallet happened FIRST, before trying to buy the tickets (had forgotten)."
+                }
+            ],
+
+            2: [ // LEVEL 2: MEDIUM (Sentence connections, timeline ordering, pronoun contrasts)
+                {
+                    topic: "Topic 2 • Relative Pronouns",
+                    instruction: "Speak the correct relative pronoun (Watch out for animals!):",
+                    question: "The dog _______ is barking outside belongs to my neighbor.",
+                    options: ["which", "who", "where", "whose"],
+                    accepted: ["which", "that", "which or that"],
+                    answerDisplay: "which / that",
+                    feedback: "Good eye! 'Who' is only for people. For animals ('the dog'), we use 'which' or 'that'!"
+                },
+                {
+                    topic: "Topic 2 • Relative Pronouns",
+                    instruction: "Speak the correct relative pronoun:",
+                    question: "This is the Italian restaurant _______ we ate the best pizza.",
+                    options: ["where", "which", "who", "whose"],
+                    accepted: ["where"],
+                    answerDisplay: "where",
+                    feedback: "Exactly! The restaurant is the place WHERE we ate the pizza, so 'where' is the right choice."
+                },
+                {
+                    topic: "Topic 2 • Relative Pronouns",
+                    instruction: "Speak the correct relative pronoun:",
+                    question: "I have a friend _______ eyes are two different colors.",
+                    options: ["whose", "who", "which", "where"],
+                    accepted: ["whose"],
+                    answerDisplay: "whose",
+                    feedback: "Excellent! Since 'eyes' belong to the friend, we need the possessive pronoun 'whose'."
+                },
+                {
+                    topic: "Topic 3 • Past Perfect x Simple",
+                    instruction: "Speak the correct verb form for the FIRST action:",
+                    question: "She was very nervous because she _______ never _______ in an airplane before.",
+                    options: ["had flown", "flew", "has flown", "would fly"],
+                    accepted: ["had flown", "had never flown"],
+                    answerDisplay: "had (never) flown",
+                    feedback: "That's right! Her lack of flying experience happened BEFORE she felt nervous on the plane: 'had never flown'."
+                },
+                {
+                    topic: "Topic 3 • Past Perfect x Simple",
+                    instruction: "Speak the correct verb for Action 2 (when the police arrived):",
+                    question: "By the time the police _______ to the bank, the robbers had already escaped.",
+                    options: ["got", "had got", "get", "would get"],
+                    accepted: ["got"],
+                    answerDisplay: "got",
+                    feedback: "Perfect! The robbers escaped first ('had escaped'). The police arrived SECOND (Action 2 = Past Simple: 'got')."
+                },
+                {
+                    topic: "Topic 4 • Second Conditional",
+                    instruction: "Speak the two verb forms to complete the sentence:",
+                    question: "If I _______ the President, I _______ build more schools.",
+                    options: ["were / would", "was / will", "am / would", "were / will"],
+                    accepted: ["were and would", "were would", "were i would", "were would build"],
+                    answerDisplay: "were / would",
+                    feedback: "Awesome job! 'If I WERE the President, I WOULD build more schools'."
+                },
+                {
+                    topic: "Topic 4 • Second Conditional",
+                    instruction: "Watch the inverted order! Speak the missing verb:",
+                    question: "She would travel more if she _______ more free time.",
+                    options: ["had", "would have", "has", "will have"],
+                    accepted: ["had", "if she had"],
+                    answerDisplay: "had",
+                    feedback: "Correct! Here 'if' is in the middle of the sentence, so it must be followed by the Simple Past: 'if she HAD'."
+                },
+                {
+                    topic: "Topic 1 • Travel Vocabulary",
+                    instruction: "Speak the correct travel noun:",
+                    question: "Astronauts are preparing for a two-year space _______ to Mars.",
+                    options: ["voyage", "trip", "sail", "depart"],
+                    accepted: ["voyage", "space voyage"],
+                    answerDisplay: "voyage",
+                    feedback: "Exactly! Long-distance journeys in space or by sea are called a 'voyage'."
+                },
+                {
+                    topic: "Topic 3 • Past Perfect x Simple",
+                    instruction: "Speak the correct auxiliary verb:",
+                    question: "When I turned on the TV, the soccer match _______ already ended.",
+                    options: ["had", "was", "did", "would"],
+                    accepted: ["had", "had already ended", "had ended"],
+                    answerDisplay: "had",
+                    feedback: "Yes! The match ended BEFORE I turned on the TV: 'had already ended'."
+                },
+                {
+                    topic: "Topic 4 • Second Conditional",
+                    instruction: "Speak the past form of 'can' to complete the condition:",
+                    question: "If animals _______ talk, the world would be very noisy!",
+                    options: ["could", "can", "would can", "will"],
+                    accepted: ["could", "if animals could"],
+                    answerDisplay: "could",
+                    feedback: "Brilliant! The Simple Past of 'can' is 'could': 'If animals COULD talk...'."
+                },
+                {
+                    topic: "Topic 1 • Travel Vocabulary",
+                    instruction: "Speak the missing word:",
+                    question: "What time does our train _______ from the central station?",
+                    options: ["depart", "voyage", "trip", "sail"],
+                    accepted: ["depart"],
+                    answerDisplay: "depart",
+                    feedback: "Correct! 'Depart' is the formal verb meaning to leave a station or airport."
+                },
+                {
+                    topic: "Topic 2 • Relative Pronouns",
+                    instruction: "Speak the correct relative pronoun:",
+                    question: "Look at that man _______ is wearing a bright red hat!",
+                    options: ["who", "which", "where", "whose"],
+                    accepted: ["who", "that"],
+                    answerDisplay: "who",
+                    feedback: "Spot on! 'That man' is a person performing an action, so we use 'who'."
+                }
+            ],
+
+            3: [ // LEVEL 3: HARD (Error detection & corrections from the study guide + tricky traps)
+                {
+                    topic: "Topic 2 • Error Hunting",
+                    instruction: "Find the mistake and speak the CORRECT relative pronoun:",
+                    question: "Mistake: 'The dog WHO is barking outside belongs to my neighbor.'",
+                    options: ["which", "where", "whose", "who"],
+                    accepted: ["which", "that", "which or that"],
+                    answerDisplay: "which / that",
+                    feedback: "You caught the mistake! We replace 'who' with 'which' or 'that' because 'who' is only for people."
+                },
+                {
+                    topic: "Topic 2 • Error Hunting",
+                    instruction: "Find the mistake and speak the CORRECT relative pronoun:",
+                    question: "Mistake: 'I have a friend WHO eyes are different colors.'",
+                    options: ["whose", "which", "where", "that"],
+                    accepted: ["whose"],
+                    answerDisplay: "whose",
+                    feedback: "Perfect! 'Who eyes' is incorrect; since the eyes belong to the friend, the correct word is 'WHOSE'."
+                },
+                {
+                    topic: "Topic 4 • Second Conditional Question",
+                    instruction: "Speak the correct structure to form the question:",
+                    question: "What _______ you do if you _______ a ghost?",
+                    options: ["would / saw", "will / see", "did / would see", "would / see"],
+                    accepted: ["would and saw", "would saw", "would you do if you saw", "would do saw"],
+                    answerDisplay: "would / saw",
+                    feedback: "Excellent! In a question we use 'What WOULD you do' + 'if you SAW (Simple Past) a ghost?'."
+                },
+                {
+                    topic: "Topic 3 • Timeline Contrast",
+                    instruction: "Speak the verb that shows the robbers escaped BEFORE the police arrived:",
+                    question: "By the time the police got to the bank, the robbers _______.",
+                    options: ["had escaped", "escaped", "have escaped", "would escape"],
+                    accepted: ["had escaped"],
+                    answerDisplay: "had escaped",
+                    feedback: "Well done! The escape happened BEFORE the police got there: 'had escaped'."
+                },
+                {
+                    topic: "Topic 1 • Vocabulary Trap",
+                    instruction: "Read carefully and speak the ONLY word that fits:",
+                    question: "My father is away on a three-day business _______ in Tokyo.",
+                    options: ["trip", "voyage", "sail", "depart"],
+                    accepted: ["trip", "business trip"],
+                    answerDisplay: "trip",
+                    feedback: "Yes! Even though Tokyo is far away, the fixed expression for going away for work and coming back is 'business TRIP'!"
+                },
+                {
+                    topic: "Topic 4 • Error Hunting",
+                    instruction: "Fix the mistake! What should replace 'would have' in the IF clause?",
+                    question: "Mistake: 'If I WOULD HAVE a million dollars, I would buy a castle.'",
+                    options: ["had", "have", "has", "will have"],
+                    accepted: ["had", "if i had"],
+                    answerDisplay: "had",
+                    feedback: "Exact! We never use 'would' inside the IF-clause. The correct form is 'If I HAD a million dollars'."
+                },
+                {
+                    topic: "Topic 3 • Timeline Contrast",
+                    instruction: "When we arrived, the teacher was already in the room. Speak the verbs:",
+                    question: "When we _______ in class, the teacher _______ already started the test.",
+                    options: ["arrived / had", "had arrived / has", "arrive / would", "arrived / was"],
+                    accepted: ["arrived and had", "arrived had", "arrived had started"],
+                    answerDisplay: "arrived / had",
+                    feedback: "Great! We arrived second ('arrived' - Action 2), and the teacher had already started first ('had started' - Action 1)."
+                },
+                {
+                    topic: "Topic 2 • Relative Pronouns",
+                    instruction: "Tricky place! Look at the verb after the blank and speak the pronoun:",
+                    question: "The hotel _______ we stayed last summer was near the beach.",
+                    options: ["where", "who", "whose", "what"],
+                    accepted: ["where"],
+                    answerDisplay: "where",
+                    feedback: "Correct! 'Where we stayed' indicates an action happening inside that place."
+                },
+                {
+                    topic: "Topic 1 • Vocabulary Contrast",
+                    instruction: "Speak the two words in order to complete the sentence:",
+                    question: "The ship will _______ from the port at 6 a.m. to begin its long _______ across the Pacific.",
+                    options: ["depart / voyage", "sail / trip", "voyage / depart", "trip / journey"],
+                    accepted: ["depart and voyage", "depart voyage"],
+                    answerDisplay: "depart / voyage",
+                    feedback: "Fantastic! The ship will leave ('depart') to begin its long ocean journey ('voyage')."
+                },
+                {
+                    topic: "Topic 4 • Second Conditional",
+                    instruction: "Speak the correct form of 'to be' for 'he' in a hypothetical situation:",
+                    question: "If he _______ a king, he would live in a golden palace.",
+                    options: ["were", "is", "will be", "would be"],
+                    accepted: ["were", "if he were"],
+                    answerDisplay: "were",
+                    feedback: "Spot on! Even with 'he/she/it', standard Second Conditional grammar uses 'WERE': 'If he were a king'."
+                }
+            ],
+
+            4: [ // LEVEL 4: EXPERT (Full synthesis, complete transformations & high-level test mastery)
+                {
+                    topic: "Expert Challenge • Second Conditional",
+                    instruction: "Speak the complete missing verb phrase:",
+                    question: "If animals could talk, the world _______ very noisy!",
+                    options: ["would be", "will be", "was", "had been"],
+                    accepted: ["would be"],
+                    answerDisplay: "would be",
+                    feedback: "Expert Level! 'If animals could talk (Simple Past), the world WOULD BE (would + base verb) very noisy!'"
+                },
+                {
+                    topic: "Expert Challenge • Past Perfect Mastery",
+                    instruction: "Speak the Past Perfect form of 'see' to complete the sentence:",
+                    question: "He knew the ending of the book because he _______ already _______ the movie.",
+                    options: ["had seen", "saw", "has seen", "would see"],
+                    accepted: ["had seen", "had already seen"],
+                    answerDisplay: "had (already) seen",
+                    feedback: "Flawless! The past participle of 'see' is 'seen'. Since he watched the movie earlier, we use 'had already seen'."
+                },
+                {
+                    topic: "Expert Challenge • Relative Pronouns",
+                    instruction: "Combine the ideas: 'I met a boy. His father is a pilot.' Speak the pronoun:",
+                    question: "I met a boy _______ father is a commercial pilot.",
+                    options: ["whose", "who", "which", "where"],
+                    accepted: ["whose"],
+                    answerDisplay: "whose",
+                    feedback: "Excellent! We replace 'His father' with 'WHOSE father' to connect both sentences and show possession."
+                },
+                {
+                    topic: "Expert Challenge • Travel Nuances",
+                    instruction: "Speak the exact word that focuses on the long travel time by train across Russia:",
+                    question: "Crossing Russia on the Trans-Siberian railway is a seven-day train _______.",
+                    options: ["journey", "voyage", "sail", "depart"],
+                    accepted: ["journey", "train journey"],
+                    answerDisplay: "journey",
+                    feedback: "Total mastery! Since it's overland by train and emphasizes the 7-day travel time, the exact word is 'journey'."
+                },
+                {
+                    topic: "Expert Challenge • Timeline Analysis",
+                    instruction: "Speak the two verbs in order (Action 2 then Action 1):",
+                    question: "When Sarah _______ at the party, Paul _______ already gone home.",
+                    options: ["arrived / had", "had arrived / went", "arrives / has", "would arrive / had"],
+                    accepted: ["arrived and had", "arrived had", "arrived had gone"],
+                    answerDisplay: "arrived / had",
+                    feedback: "Perfect! When Sarah arrived ('arrived' - Action 2), Paul had already left ('had gone' - Action 1)."
+                },
+                {
+                    topic: "Expert Challenge • Second Conditional Inversion",
+                    instruction: "Speak the two missing parts in order:",
+                    question: "Where _______ you live if you _______ choose any country in the world?",
+                    options: ["would / could", "will / can", "did / would", "would / can"],
+                    accepted: ["would and could", "would could"],
+                    answerDisplay: "would / could",
+                    feedback: "Brilliant! 'Where WOULD you live if you COULD choose any country in the world?'"
+                },
+                {
+                    topic: "Expert Challenge • Pronoun Contrast",
+                    instruction: "Look closely: 'attracts millions' is a verb! Speak the pronoun:",
+                    question: "The Louvre is a famous museum _______ attracts millions of tourists.",
+                    options: ["which", "where", "who", "whose"],
+                    accepted: ["which", "that", "which or that"],
+                    answerDisplay: "which / that",
+                    feedback: "High-level insight! Here the museum is the subject doing the action ('attracts'), so we use 'which/that' instead of 'where'!"
+                },
+                {
+                    topic: "Expert Challenge • Past Perfect Negative",
+                    instruction: "Speak the negative Past Perfect of 'study':",
+                    question: "He failed the exam because he _______ for it the week before.",
+                    options: ["hadn't studied", "didn't study", "wouldn't study", "hasn't studied"],
+                    accepted: ["had not studied", "hadn't studied"],
+                    answerDisplay: "hadn't studied",
+                    feedback: "Sensational! Not studying happened the week BEFORE the exam: 'hadn't studied' (had not studied)."
+                },
+                {
+                    topic: "Expert Challenge • Complete Review",
+                    instruction: "Speak the missing verb to complete the sentence:",
+                    question: "In 1492, Christopher Columbus decided to _______ across the ocean on a historic voyage.",
+                    options: ["sail", "depart", "trip", "journey"],
+                    accepted: ["sail"],
+                    answerDisplay: "sail",
+                    feedback: "Bullseye! 'To sail across the ocean' means to travel on water using a ship."
+                },
+                {
+                    topic: "Expert Challenge • Final Boss",
+                    instruction: "Speak the missing word that connects the person and their possession:",
+                    question: "That is the tourist _______ passport was lost at the airport.",
+                    options: ["whose", "who", "where", "which"],
+                    accepted: ["whose"],
+                    answerDisplay: "whose",
+                    feedback: "Perfect! The passport belongs to the tourist, so we use 'WHOSE passport'!"
+                }
+            ]
+        };
+
+        let currentLevel = 1;
+        let levelProgress = { 1: 0, 2: 0, 3: 0, 4: 0 };
+        let usedQuestionIndices = { 1: new Set(), 2: new Set(), 3: new Set(), 4: new Set() };
+        let currentQuestion = null;
+        let isAnswered = false;
+        let soundEnabled = true;
+        let totalCorrect = 0;
+        let totalDrops = 0;
+        let currentFontScale = 0;
+        let lastStateSnapshot = null;
+
+        // Web Speech API state
+        let recognition = null;
+        let isListening = false;
+
+        // Initialize Sound Effects with Tone.js
+        let synth = null;
+        function initAudio() {
+            if (!synth && window.Tone) {
+                synth = new Tone.PolySynth(Tone.Synth).toDestination();
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                initAudio();
+                if (!synth) return;
+                const now = Tone.now();
+                if (type === 'correct') {
+                    synth.triggerAttackRelease(["C5", "E5", "G5", "C6"], "8n", now);
+                } else if (type === 'wrong') {
+                    synth.triggerAttackRelease(["G3", "Gb3"], "4n", now);
+                } else if (type === 'levelup') {
+                    synth.triggerAttackRelease(["C4", "E4", "G4"], "16n", now);
+                    synth.triggerAttackRelease(["G4", "B4", "D5"], "16n", now + 0.15);
+                    synth.triggerAttackRelease(["C5", "E5", "G5", "C6"], "4n", now + 0.3);
+                } else if (type === 'spin') {
+                    synth.triggerAttackRelease(["A4"], "32n", now);
+                }
+            } catch (e) {
+                // Ignore audio context restrictions before user interaction
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('sound-btn');
+            if (soundEnabled) {
+                btn.innerHTML = '<i class="fa-solid fa-volume-high text-lg"></i>';
+                btn.className = "p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 transition";
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-volume-xmark text-lg"></i>';
+                btn.className = "p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-500 border border-slate-700 transition";
+            }
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen().catch(() => {});
+            }
+        }
+
+        function adjustFontSize(delta) {
+            currentFontScale = Math.max(-1, Math.min(2, currentFontScale + delta));
+            const grid = document.getElementById('insights-grid');
+            const sizes = ['text-sm', 'text-base', 'text-lg', 'text-xl'];
+            grid.className = `grid grid-cols-1 lg:grid-cols-2 gap-6 ${sizes[currentFontScale + 1]}`;
+        }
+
+        function switchTab(tabName) {
+            ['insights', 'game', 'teacher'].forEach(t => {
+                const view = document.getElementById(`view-${t}`);
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tabName) {
+                    view.classList.remove('hidden');
+                    btn.className = "px-4 py-2 rounded-xl font-bold text-sm md:text-base transition-all flex items-center gap-2 bg-indigo-600 text-white shadow";
+                } else {
+                    view.classList.add('hidden');
+                    btn.className = "px-4 py-2 rounded-xl font-bold text-sm md:text-base transition-all flex items-center gap-2 text-slate-300 hover:text-white";
+                }
+            });
+        }
+
+        const participationGroups = [
+            "🎤 Window Row!",
+            "🎤 Door Row!",
+            "🎤 Back Row Squad!",
+            "🎤 Front Row Squad!",
+            "🎤 Center Pair!",
+            "🎤 Everyone in Chorus!",
+            "🎤 Boys Answer!",
+            "🎤 Girls Answer!",
+            "🎤 Brave Volunteer!"
+        ];
+
+        function spinSpotlight() {
+            const display = document.getElementById('spotlight-display');
+            let count = 0;
+            const interval = setInterval(() => {
+                playSound('spin');
+                const randomGroup = participationGroups[Math.floor(Math.random() * participationGroups.length)];
+                display.textContent = randomGroup;
+                display.className = "text-base font-extrabold text-amber-300 mt-0.5";
+                count++;
+                if (count > 8) {
+                    clearInterval(interval);
+                    display.className = "text-base font-extrabold text-emerald-400 mt-0.5 slot-active";
+                }
+            }, 90);
+        }
+
+        function getUnseenQuestion(level) {
+            const pool = questionBank[level];
+            let used = usedQuestionIndices[level];
+
+            // If all questions in this level have been seen, reset the used set so it never crashes
+            if (used.size >= pool.length) {
+                used.clear();
+            }
+
+            const availableIndices = [];
+            for (let i = 0; i < pool.length; i++) {
+                if (!used.has(i)) availableIndices.push(i);
+            }
+
+            const chosenIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+            used.add(chosenIndex);
+            return pool[chosenIndex];
+        }
+
+        function updateProgressUI() {
+            const levelNames = { 1: "Easy", 2: "Medium", 3: "Hard", 4: "Expert" };
+            const levelColors = {
+                1: "border-emerald-500 bg-emerald-500/15",
+                2: "border-cyan-500 bg-cyan-500/15",
+                3: "border-amber-500 bg-amber-500/15",
+                4: "border-rose-500 bg-rose-500/15"
+            };
+
+            for (let lvl = 1; lvl <= 4; lvl++) {
+                const badge = document.getElementById(`lvl-badge-${lvl}`);
+                const dotsContainer = document.getElementById(`lvl-dots-${lvl}`);
+                dotsContainer.innerHTML = '';
+
+                for (let i = 1; i <= 5; i++) {
+                    const dot = document.createElement('span');
+                    const filled = i <= levelProgress[lvl];
+                    dot.className = `w-3 h-3 rounded-full transition-all ${
+                        filled ? 'bg-emerald-400 shadow shadow-emerald-400/50 scale-110' : 'bg-slate-700'
+                    }`;
+                    dotsContainer.appendChild(dot);
+                }
+
+                if (lvl === currentLevel) {
+                    badge.className = `p-3 rounded-2xl border-2 ${levelColors[lvl]} text-center transition-all transform scale-105 shadow-lg`;
+                } else if (levelProgress[lvl] >= 5) {
+                    badge.className = "p-3 rounded-2xl border-2 border-emerald-500/60 bg-emerald-950/30 text-center opacity-90 transition-all";
+                } else {
+                    badge.className = "p-3 rounded-2xl border-2 border-slate-800 bg-slate-800/40 text-center opacity-50 transition-all";
+                }
+            }
+
+            document.getElementById('q-status-counter').textContent =
+                `Level ${levelNames[currentLevel]}: ${levelProgress[currentLevel]} of 5 Correct`;
+        }
+
+        function loadQuestion() {
+            isAnswered = false;
+            lastStateSnapshot = null;
+            currentQuestion = getUnseenQuestion(currentLevel);
+            updateProgressUI();
+
+            document.getElementById('q-topic-badge').textContent = currentQuestion.topic;
+            document.getElementById('q-instruction').textContent = currentQuestion.instruction;
+            document.getElementById('q-text').textContent = currentQuestion.question;
+            document.getElementById('feedback-box').classList.add('hidden');
+            document.getElementById('override-btn').classList.add('hidden');
+            document.getElementById('override-btn').classList.remove('flex');
+            document.getElementById('manual-answer-input').value = '';
+            document.getElementById('speech-transcript').textContent = '"..."';
+
+            // Shuffle options for display
+            const shuffled = [...currentQuestion.options].sort(() => Math.random() - 0.5);
+            const container = document.getElementById('q-options-container');
+            container.innerHTML = '';
+
+            shuffled.forEach((opt, idx) => {
+                const letters = ['A', 'B', 'C', 'D'];
+                const btn = document.createElement('button');
+                btn.className = "p-4 rounded-2xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-left flex items-center justify-between group transition";
+                btn.onclick = () => evaluateAnswer(opt, "Selected / Spoken Option");
+                btn.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-lg bg-slate-900 text-indigo-400 font-extrabold flex items-center justify-center text-sm border border-slate-700 group-hover:bg-indigo-600 group-hover:text-white transition">${letters[idx]}</span>
+                        <span class="text-lg md:text-xl font-bold text-white">${opt}</span>
+                    </div>
+                    <i class="fa-solid fa-volume-high text-slate-500 group-hover:text-indigo-400 text-sm"></i>
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        function normalizeText(str) {
+            return str
+                .toLowerCase()
+                .replace(/[.,?!'"/-]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function evaluateAnswer(rawInput, sourceLabel = "Voice Captured") {
+            if (isAnswered) return;
+            const cleaned = normalizeText(rawInput);
+            if (!cleaned) return;
+
+            // Save state snapshot before evaluating in case teacher needs to override a mic mishearing
+            lastStateSnapshot = {
+                level: currentLevel,
+                progress: { ...levelProgress },
+                totalCorrect: totalCorrect,
+                totalDrops: totalDrops
+            };
+
+            document.getElementById('speech-transcript').textContent = `"${rawInput}" (${sourceLabel})`;
+
+            // Check if the spoken phrase matches or contains any accepted answer
+            const isCorrect = currentQuestion.accepted.some(acc => {
+                const normAcc = normalizeText(acc);
+                return cleaned === normAcc || cleaned.includes(normAcc);
+            }) || normalizeText(currentQuestion.options[0]) === cleaned;
+
+            isAnswered = true;
+            const feedbackBox = document.getElementById('feedback-box');
+            const feedbackIcon = document.getElementById('feedback-icon');
+            const feedbackTitle = document.getElementById('feedback-title');
+            const feedbackExp = document.getElementById('feedback-explanation');
+            const overrideBtn = document.getElementById('override-btn');
+
+            feedbackBox.classList.remove('hidden');
+
+            if (isCorrect) {
+                overrideBtn.classList.add('hidden');
+                overrideBtn.classList.remove('flex');
+                playSound('correct');
+                totalCorrect++;
+                levelProgress[currentLevel]++;
+
+                let statusMsg = `Correct! Answer: "${currentQuestion.answerDisplay}".`;
+                if (levelProgress[currentLevel] >= 5 && currentLevel < 4) {
+                    playSound('levelup');
+                    statusMsg += ` 🚀 LEVEL COMPLETE! Moving up to Level ${currentLevel + 1}!`;
+                }
+
+                feedbackBox.className = "rounded-2xl p-5 border-2 border-emerald-500 bg-emerald-950/50 transition-all slot-active";
+                feedbackIcon.className = "w-12 h-12 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center text-2xl shrink-0";
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-check"></i>';
+                feedbackTitle.className = "text-lg md:text-xl font-extrabold text-emerald-300";
+                feedbackTitle.textContent = statusMsg;
+                feedbackExp.textContent = currentQuestion.feedback;
+
+            } else {
+                overrideBtn.classList.remove('hidden');
+                overrideBtn.classList.add('flex');
+                playSound('wrong');
+                totalDrops++;
+
+                let dropExplanation = "";
+                if (currentLevel > 1) {
+                    currentLevel--;
+                    // Reset current level counter so they must complete 5 questions to climb back up
+                    levelProgress[currentLevel] = 0;
+                    dropExplanation = `⚠️ Challenge Rule: You dropped back to Level ${currentLevel} with a brand-new question! You need 5 correct answers in this level to climb back up.`;
+                } else {
+                    levelProgress[1] = 0;
+                    dropExplanation = `⚠️ Challenge Rule: Level 1 progress was reset to zero! Let's try an unseen question and get a 5-answer streak.`;
+                }
+
+                feedbackBox.className = "rounded-2xl p-5 border-2 border-rose-500 bg-rose-950/50 transition-all slot-active";
+                feedbackIcon.className = "w-12 h-12 rounded-xl bg-rose-500 text-white flex items-center justify-center text-2xl shrink-0";
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-rotate-left"></i>';
+                feedbackTitle.className = "text-lg md:text-xl font-extrabold text-rose-300";
+                feedbackTitle.textContent = `Oops! The correct answer was "${currentQuestion.answerDisplay}".`;
+                feedbackExp.innerHTML = `${currentQuestion.feedback}<br><strong class="text-amber-300 block mt-1">${dropExplanation}</strong>`;
+            }
+
+            updateProgressUI();
+        }
+
+        function overrideWrongAnswer() {
+            if (!isAnswered || !lastStateSnapshot) return;
+
+            // Restore state before the false-negative penalty and award the point
+            currentLevel = lastStateSnapshot.level;
+            levelProgress = { ...lastStateSnapshot.progress };
+            totalCorrect = lastStateSnapshot.totalCorrect + 1;
+            totalDrops = lastStateSnapshot.totalDrops;
+            levelProgress[currentLevel]++;
+
+            const feedbackBox = document.getElementById('feedback-box');
+            const feedbackIcon = document.getElementById('feedback-icon');
+            const feedbackTitle = document.getElementById('feedback-title');
+            const feedbackExp = document.getElementById('feedback-explanation');
+            const overrideBtn = document.getElementById('override-btn');
+
+            overrideBtn.classList.add('hidden');
+            overrideBtn.classList.remove('flex');
+
+            playSound('correct');
+
+            let statusMsg = `Validated by Teacher! Answer: "${currentQuestion.answerDisplay}".`;
+            if (levelProgress[currentLevel] >= 5 && currentLevel < 4) {
+                playSound('levelup');
+                statusMsg += ` 🚀 LEVEL COMPLETE! Moving up to Level ${currentLevel + 1}!`;
+            }
+
+            document.getElementById('speech-transcript').textContent = `"${currentQuestion.answerDisplay}" (Validated by Teacher Override)`;
+
+            feedbackBox.className = "rounded-2xl p-5 border-2 border-emerald-500 bg-emerald-950/50 transition-all slot-active";
+            feedbackIcon.className = "w-12 h-12 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center text-2xl shrink-0";
+            feedbackIcon.innerHTML = '<i class="fa-solid fa-check-double"></i>';
+            feedbackTitle.className = "text-lg md:text-xl font-extrabold text-emerald-300";
+            feedbackTitle.textContent = statusMsg;
+            feedbackExp.textContent = currentQuestion.feedback;
+
+            updateProgressUI();
+        }
+
+        function nextQuestion() {
+            // Check if current level reached 5 correct answers
+            if (levelProgress[currentLevel] >= 5) {
+                if (currentLevel < 4) {
+                    currentLevel++;
+                    loadQuestion();
+                } else {
+                    // Completed all 4 levels with 5 questions each!
+                    showVictoryModal();
+                }
+            } else {
+                loadQuestion();
+            }
+        }
+
+        function submitManualAnswer() {
+            const input = document.getElementById('manual-answer-input');
+            if (input.value.trim() !== "") {
+                evaluateAnswer(input.value.trim(), "Teacher / Keyboard Validated");
+            }
+        }
+
+        function showVictoryModal() {
+            playSound('levelup');
+            document.getElementById('stat-correct').textContent = totalCorrect;
+            document.getElementById('stat-drops').textContent = totalDrops;
+            const modal = document.getElementById('victory-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function resetFullGame() {
+            currentLevel = 1;
+            levelProgress = { 1: 0, 2: 0, 3: 0, 4: 0 };
+            totalCorrect = 0;
+            totalDrops = 0;
+            const modal = document.getElementById('victory-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            loadQuestion();
+            switchTab('game');
+        }
+
+        function setupSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const statusEl = document.getElementById('mic-status');
+
+            if (!SpeechRecognition) {
+                statusEl.textContent = "Voice recognition not supported in this browser. Click the options or type below.";
+                return;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 3;
+
+            recognition.onstart = () => {
+                isListening = true;
+                const btn = document.getElementById('mic-btn');
+                btn.classList.add('pulse-mic');
+                document.getElementById('mic-label').textContent = "Listening...";
+                statusEl.textContent = "🎧 Listening to the class... Speak in English now!";
+                statusEl.className = "text-sm font-bold text-rose-400 mt-4 text-center";
+            };
+
+            recognition.onresult = (event) => {
+                const results = event.results[0];
+                let allTranscripts = [];
+                for (let i = 0; i < results.length; i++) {
+                    allTranscripts.push(results[i].transcript);
+                }
+                const primaryTranscript = results[0].transcript;
+                const combinedCheck = allTranscripts.join(" ");
+                document.getElementById('speech-transcript').textContent = `"${primaryTranscript}"`;
+                evaluateAnswer(combinedCheck, "Voice Recognition");
+            };
+
+            recognition.onerror = (event) => {
+                isListening = false;
+                const btn = document.getElementById('mic-btn');
+                btn.classList.remove('pulse-mic');
+                document.getElementById('mic-label').textContent = "Speak Now";
+                statusEl.textContent = "Couldn't hear clearly. Click to try again or select the spoken option!";
+                statusEl.className = "text-sm font-semibold text-amber-400 mt-4 text-center";
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                const btn = document.getElementById('mic-btn');
+                btn.classList.remove('pulse-mic');
+                document.getElementById('mic-label').textContent = "Speak Now";
+                if (!isAnswered) {
+                    statusEl.textContent = "Microphone ready (en-US).";
+                    statusEl.className = "text-sm font-semibold text-slate-400 mt-4 text-center";
+                }
+            };
+        }
+
+        function toggleVoiceRecognition() {
+            if (!recognition) {
+                setupSpeechRecognition();
+            }
+            if (!recognition) return;
+
+            if (isListening) {
+                recognition.stop();
+            } else {
+                if (isAnswered) {
+                    nextQuestion();
+                }
+                try {
+                    recognition.start();
+                } catch (e) {
+                    recognition.stop();
+                }
+            }
+        }
+
+        // Start application on window load
+        window.onload = function () {
+            setupSpeechRecognition();
+            loadQuestion();
+        };
+    </script>
+</body>
+</html>
